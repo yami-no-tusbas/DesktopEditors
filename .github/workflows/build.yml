@@ -452,7 +452,7 @@ jobs:
             ./docker-bake.hcl
           # extra_targets is either "" (euro-office) or "brand-icons," so the
           # comma-joined target list resolves correctly for both.
-          targets: packages
+          targets: ${{ matrix.arch == 'amd64' && 'packages,appimage' || 'packages' }}
           # push=false here; per-target pushing is controlled via tags below.
           # Targets with empty tags= are not pushed regardless of this flag.
           push: false
@@ -467,6 +467,9 @@ jobs:
             packages.cache-from=type=registry,ref=${{ env.REGISTRY }}/${{ env.CACHE_IMAGE_NAME }}:${{ steps.meta.outputs.ref_name }}-${{ matrix.brand.cache_prefix }}packages-buildcache
             packages.cache-to=type=registry,ref=${{ env.REGISTRY }}/${{ env.CACHE_IMAGE_NAME }}:${{ steps.meta.outputs.ref_name }}-${{ matrix.brand.cache_prefix }}packages-buildcache,mode=max
             packages.tags=
+            appimage.cache-from=type=registry,ref=${{ env.REGISTRY }}/${{ env.CACHE_IMAGE_NAME }}:${{ steps.meta.outputs.ref_name }}-${{ matrix.brand.cache_prefix }}appimage-buildcache
+            appimage.cache-to=type=registry,ref=${{ env.REGISTRY }}/${{ env.CACHE_IMAGE_NAME }}:${{ steps.meta.outputs.ref_name }}-${{ matrix.brand.cache_prefix }}appimage-buildcache,mode=max
+            appimage.tags=
         env:
           GIT_COMMIT: ${{ steps.meta.outputs.sha_short }}
           REGISTRY: ${{ env.REGISTRY }}
@@ -483,3 +486,4 @@ jobs:
           path: |
             build/linux/deploy/packages/*.deb
             build/linux/deploy/packages/*.rpm
+            build/linux/deploy/appimage/*.AppImage

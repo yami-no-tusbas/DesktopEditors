@@ -69,3 +69,34 @@ FROM ubuntu:24.04 AS package
 # the finished .deb and .rpm files.
 FROM scratch AS packages
     COPY --from=package /packages/ /
+
+#### APPIMAGE (x86_64 only) ####
+# Keep this stage separate from `packages`: the Linux matrix still builds deb/rpm
+# packages for arm64, while the portable demo build is intentionally amd64-only.
+FROM ubuntu:22.04 AS appimage-package
+
+    ARG PRODUCT_VERSION
+    ARG BUILD_NUMBER=0
+
+    RUN apt-get update && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates desktop-file-utils file libfuse2 wget && \
+        rm -rf /var/lib/apt/lists/*
+
+    WORKDIR /appimage
+    COPY --from=package /packages/*_amd64.deb /appimage/euro-office-desktopeditors_amd64.deb
+    COPY build/appimage/EuroOffice-x86_64.yml /appimage/
+
+    RUN wget -q https://raw.githubusercontent.com/AppImage/AppImages/master/pkg2appimage && \
+        chmod +x pkg2appimage && \
+        DESKTOPEDITORS_DEB_URL="/appimage/euro-office-desktopeditors_amd64.deb" \
+            ./pkg2appimage EuroOffice-x86_64.yml && \
+        mkdir -p /appimage-output && \
+        appimage_path="$(find out -maxdepth 1 -type f -name '*.AppImage' -print -quit)" && \
+        test -n "${appimage_path}" && \
+        cp "${appimage_path}" \
+            "/appimage-output/Euro-Office-DesktopEditors-${PRODUCT_VERSION}-${BUILD_NUMBER}-x86_64.AppImage" && \
+        chmod 755 /appimage-output/*.AppImage
+
+FROM scratch AS appimage
+    COPY --from=appimage-package /appimage-output/ /

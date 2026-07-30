@@ -143,3 +143,18 @@ target "packages" {
 
   cache-from = ["type=local,src=/tmp/${REGISTRY}/packages"]  # reuses builder cache
 }
+
+target "appimage" {
+  inherits   = ["_common"]
+  context    = "../.."
+  dockerfile = "./build/.docker/packages.bake.Dockerfile"
+  target     = "appimage"
+  tags       = ["${REGISTRY}/appimage:${TAG}"]
+  contexts = {
+    desktop-linux = "target:desktop-linux"
+  }
+
+  output = ["type=local,dest=./deploy/appimage"]
+
+  cache-from = ["type=local,src=/tmp/${REGISTRY}/appimage"]
+}

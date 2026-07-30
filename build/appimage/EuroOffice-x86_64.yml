@@ -1,0 +1,48 @@
+app: euro-office-desktopeditors
+
+ingredients:
+  packages:
+    - kde-baseapps-bin
+    - libcurl3-gnutls
+    - libgconf2-4
+    - libglu1-mesa
+    - libgtk2.0-0
+    - libnotify4
+    - gstreamer1.0-libav
+    - gstreamer1.0-plugins-base
+    - gstreamer1.0-plugins-good
+    - gstreamer1.0-plugins-ugly
+    - gstreamer1.0-pulseaudio
+    - gstreamer1.0-x
+    - freeglut3
+    - libc6
+  dist: trusty
+  script:
+    - test -n "$DESKTOPEDITORS_DEB_URL"
+    - cp "$DESKTOPEDITORS_DEB_URL" euro-office-desktopeditors_amd64.deb
+    - wget http://archive.ubuntu.com/ubuntu/pool/main/k/keyutils/libkeyutils1_1.5.9-8ubuntu1_amd64.deb
+    - wget http://archive.ubuntu.com/ubuntu/pool/main/g/gstreamer1.0/libgstreamer1.0-0_1.8.0-1_amd64.deb
+  sources:
+    - deb http://archive.ubuntu.com/ubuntu/ trusty main universe
+  exclude:
+    - libsqlite3-0
+
+script:
+  - cp ./usr/share/applications/euro-office-desktopeditors.desktop .
+  - mv opt/euro-office/desktopeditors/* usr/bin/
+  - sed -i -e 's|export|cd $(dirname $(readlink -f "$0"))\nexport|g' usr/bin/euro-office-desktopeditors
+  - sed -i -e 's|/opt/euro-office/desktopeditors|.|g' usr/bin/euro-office-desktopeditors
+  - sed -i -e 's|export LD_LIBRARY_PATH=|export LD_LIBRARY_PATH=$APPDIR/usr/bin/:|g' usr/bin/euro-office-desktopeditors
+  - sed -i -e 's|export|export GST_PLUGIN_SCANNER=$APPDIR/usr/lib/gstreamer-1.0/gstreamer1.0/gstreamer-1.0/gst-plugin-scanner\nexport GST_PLUGIN_PATH=$APPDIR/usr/lib/gstreamer-1.0/gstreamer1.0/\nexport|g' usr/bin/euro-office-desktopeditors
+  - sed -i -e 's|Exec=/usr/bin/euro-office-desktopeditors|Exec=euro-office-desktopeditors|g' euro-office-desktopeditors.desktop
+  - mkdir -p usr/lib/x86_64-linux-gnu/gstreamer1.0/
+  - cp usr/lib/x86_64-linux-gnu/libgst* usr/lib/x86_64-linux-gnu/gstreamer1.0/
+  - mv usr/lib/x86_64-linux-gnu/*so* usr/bin/
+  - mv usr/lib/*so* usr/bin/
+  - mv lib/x86_64-linux-gnu/*so* usr/bin/
+  - rm -rf bin/ opt/ etc/ var/ lib/
+  - rm -f usr/bin/libgmodule-2.0.so.0*
+  - ln -s x86_64-linux-gnu usr/lib/gstreamer-1.0
+  - cp ./usr/share/icons/hicolor/256x256/apps/euro-office-desktopeditors.png euro-office-desktopeditors.png
+  - sed -i -e 's|deb|appimage|g' usr/bin/converter/package.config
+  - rm -rf usr/share/fonts
