@@ -6,7 +6,7 @@ on:
 
 
 env:
-  REGISTRY: ghcr.io/euro-office
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
   CACHE_IMAGE_NAME: desktopeditors-build-cache
   PRODUCT_VERSION: 9.3.1
   BUILD_NUMBER: dev.1
@@ -54,14 +54,14 @@ jobs:
         with:
           path: .
           submodules: recursive
-          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN }}
+          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - name: Checkout nextcloud-office-brand repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: Euro-Office/nextcloud-office-brand
           path: build/brands/nextcloud-office-brand
-          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN }}
+          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - name: Debug workspace
         run: |
@@ -179,7 +179,7 @@ jobs:
         with:
           path: .
           submodules: recursive
-          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN }}
+          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
  
       # windows-2022 ships VS2022 but not always the ARM64 *target* tools.
       # clang-cl (V8) links arm64 against the arm64 Windows SDK libs;
@@ -245,14 +245,14 @@ jobs:
         with:
           path: .
           submodules: recursive
-          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN }}
+          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - name: Checkout nextcloud-office-brand repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: Euro-Office/nextcloud-office-brand
           path: build/brands/nextcloud-office-brand
-          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN }}
+          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - uses: actions/download-artifact@v4
         with:
@@ -366,14 +366,14 @@ jobs:
         with:
           path: .
           submodules: recursive
-          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN }}
+          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - name: Checkout nextcloud-office-brand repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: Euro-Office/nextcloud-office-brand
           path: build/brands/nextcloud-office-brand
-          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN }}
+          token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - uses: actions/download-artifact@v4
         with:
