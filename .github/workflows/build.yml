@@ -3,6 +3,15 @@ name: Build (Windows/Linux)
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      build_target:
+        description: Build scope
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - linux-x86_64
 
 
 env:
@@ -57,6 +66,7 @@ jobs:
           token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - name: Checkout nextcloud-office-brand repo
+        if: matrix.brand.name == 'nextcloud-office'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: Euro-Office/nextcloud-office-brand
@@ -166,6 +176,7 @@ jobs:
 
 
   crosscompile-3rdparty-arm64:
+    if: github.event_name != 'workflow_dispatch' || inputs.build_target == 'all'
     runs-on: windows-2022                 # x64 host that cross-compiles to arm64
     env:
       PYTHONUTF8: "1"
@@ -224,6 +235,7 @@ jobs:
 
 
   build-windows:
+    if: github.event_name != 'workflow_dispatch' || inputs.build_target == 'all'
     runs-on: ${{ matrix.arch == 'arm64' && 'windows-11-arm' || 'windows-2022' }}
     needs: [build-common, crosscompile-3rdparty-arm64]
     strategy:
@@ -248,6 +260,7 @@ jobs:
           token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - name: Checkout nextcloud-office-brand repo
+        if: matrix.brand.name == 'nextcloud-office'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: Euro-Office/nextcloud-office-brand
@@ -347,9 +360,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - amd64
-          - arm64
+        arch: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.build_target == 'linux-x86_64' && '["amd64"]' || '["amd64","arm64"]') }}
         brand:
           - name: euro-office
             extra_bake_files: ""
@@ -369,6 +380,7 @@ jobs:
           token: ${{ secrets.EURO_OFFICE_MIRROR_TOKEN || github.token }}
 
       - name: Checkout nextcloud-office-brand repo
+        if: matrix.brand.name == 'nextcloud-office'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: Euro-Office/nextcloud-office-brand
